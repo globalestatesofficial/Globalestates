@@ -1,137 +1,127 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GlobalEstate</title>
+  <title>GlobalEstate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-font-family:Arial;
-background:black;
-color:white;
-text-align:center;
-}
-h1{color:#00ffcc;}
-.container{
-margin-top:40px;
-}
-input{
-padding:12px;
-margin:8px;
-width:250px;
-border-radius:8px;
-border:none;
-}
-button{
-padding:15px 25px;
-margin:10px;
-font-size:18px;
-background:#00ffcc;
-border:none;
-border-radius:10px;
-}
-.card{
-background:#111;
-margin:20px;
-padding:15px;
-border-radius:12px;
-}
-</style>
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <style>
+    body{
+      font-family:Arial;
+      background:black;
+      color:white;
+      text-align:center;
+    }
+    h1{
+      color:gold;
+      font-size:32px;
+    }
+    input{
+      padding:12px;
+      margin:6px;
+      width:80%;
+      border-radius:8px;
+      border:none;
+    }
+    button{
+      padding:12px 20px;
+      background:gold;
+      border:none;
+      border-radius:10px;
+      font-weight:bold;
+      margin:10px;
+    }
+    .card{
+      background:#111;
+      margin:15px;
+      padding:15px;
+      border-radius:12px;
+      box-shadow:0 0 10px gold;
+    }
+    a{
+      color:lightgreen;
+      font-weight:bold;
+    }
+  </style>
 </head>
 
 <body>
 
 <h1>🌍 GlobalEstate</h1>
-<p>Post • Buy • Rent Properties Worldwide</p>
+<p>Buy • Sell • Rent Worldwide</p>
 
-<div class="container">
-<h2>List Your Property</h2>
+<h2>Add Property</h2>
 
-<input type="text" id="country" placeholder="Country"><br>
-<input type="text" id="state" placeholder="State"><br>
-<input type="text" id="city" placeholder="City"><br>
-<input type="text" id="price" placeholder="Price"><br>
-<input type="text" id="contact" placeholder="Contact Number"><br>
+<input id="country" placeholder="Country"><br>
+<input id="state" placeholder="State"><br>
+<input id="city" placeholder="City"><br>
+<input id="price" placeholder="Price"><br>
+<input id="contact" placeholder="WhatsApp Number"><br>
 
-<button onclick="addProperty()">POST PROPERTY</button>
-</div>
+<button onclick="addProperty()">Post Property</button>
 
-<h2>🌍 Live Properties</h2>
+<h2>All Properties</h2>
 <div id="list"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// 🔑 PASTE YOUR SUPABASE KEYS HERE
 const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
 const supabaseKey = "sb_publishable_veIDD7EudrA_OWGF-Jz83g_oXwJpvJA";
-
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// ADD PROPERTY
+async function addProperty(){
+  let country = document.getElementById("country").value;
+  let state = document.getElementById("state").value;
+  let city = document.getElementById("city").value;
+  let price = document.getElementById("price").value;
+  let contact = document.getElementById("contact").value;
 
-// 🚀 POST PROPERTY
-async function addProperty() {
+  if(!country || !city || !price){
+    alert("Fill all fields");
+    return;
+  }
 
-const country = document.getElementById("country").value;
-const state = document.getElementById("state").value;
-const city = document.getElementById("city").value;
-const price = document.getElementById("price").value;
-const contact = document.getElementById("contact").value;
+  const { error } = await supabase
+  .from("Properties")
+  .insert([{country,state,city,price,contact}]);
 
-if(!country || !city){
-alert("Fill all fields");
-return;
+  if(error){
+    alert("Error: "+error.message);
+  }else{
+    alert("Property Added 🚀");
+    loadProperties();
+  }
 }
 
-const { error } = await supabase
-.from("Properties")   // table name EXACT
-.insert([
-{
-country: country,
-state: state,
-city: city,
-price: price,
-contact: contact
-}
-]);
-
-if(error){
-alert("❌ Error posting");
-console.log(error);
-}else{
-alert("✅ Property Posted Successfully");
-loadProperties();
-}
-}
-
-
-// 📡 LOAD PROPERTIES FROM DATABASE
+// LOAD PROPERTIES
 async function loadProperties(){
+  const { data, error } = await supabase
+  .from("Properties")
+  .select("*")
+  .order("id",{ascending:false});
 
-const { data, error } = await supabase
-.from("Properties")
-.select("*")
-.order("id",{ascending:false});
-
-if(data){
-let html="";
-
-data.forEach(p=>{
-html += `
-<div class="card">
-<h3>${p.city}, ${p.state}, ${p.country}</h3>
-<p>Price: ${p.price}</p>
-<p>Contact: ${p.contact}</p>
-</div>
-`;
-});
-
-document.getElementById("list").innerHTML = html;
+  if(data){
+    let html="";
+    data.forEach(p=>{
+      html+=`
+      <div class="card">
+      <h3>${p.city}, ${p.state}</h3>
+      <p>${p.country}</p>
+      <h2>₹ ${p.price}</h2>
+      <a href="https://wa.me/${p.contact}" target="_blank">
+      📲 WhatsApp Seller
+      </a>
+      </div>
+      `;
+    });
+    document.getElementById("list").innerHTML=html;
+  }
 }
-}
 
-// auto load
 loadProperties();
-
 </script>
+
 </body>
 </html>
