@@ -4,6 +4,7 @@
   <title>GlobalEstate</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  
   <!-- SUPABASE CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -55,6 +56,7 @@
 
 <button onclick="addProperty()">Post Property</button>
 
+  
 <h2>All Properties</h2>
 <div id="list"></div>
 
@@ -64,6 +66,7 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+  
 // ADD PROPERTY
 async function addProperty(){
 
@@ -78,6 +81,7 @@ async function addProperty(){
     return;
   }
 
+  
   const { error } = await supabase
     .from("Properties")   // capital P same as supabase table
     .insert([{ country, state, city, price, contact }]);
