@@ -1,137 +1,204 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GlobalEstate</title>
+<title>GlobalEstate Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- SUPABASE CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body{
+margin:0;
 font-family:Arial;
-background:black;
+background:#000;
 color:white;
 text-align:center;
 }
-
-h1{color:gold}
-
-input{
-padding:12px;
-margin:6px;
-width:85%;
-border-radius:8px;
-border:none;
+.header{
+background:#0a0a0a;
+padding:20px;
+border-bottom:1px solid gold;
 }
-
+.logo{
+font-size:28px;
+color:gold;
+font-weight:bold;
+}
+.container{
+padding:20px;
+max-width:500px;
+margin:auto;
+}
+input{
+width:90%;
+padding:14px;
+margin:8px;
+border-radius:10px;
+border:none;
+background:#111;
+color:white;
+}
 button{
-padding:12px 20px;
-background:gold;
+padding:14px 20px;
 border:none;
 border-radius:10px;
+background:gold;
 font-weight:bold;
-margin:10px;
+margin:8px;
+width:92%;
 }
-
 .card{
 background:#111;
 margin:15px;
-padding:15px;
-border-radius:12px;
-box-shadow:0 0 10px gold;
+padding:20px;
+border-radius:14px;
+box-shadow:0 0 15px rgba(255,215,0,0.3);
 }
-
-a{color:lightgreen;font-weight:bold}
+.hidden{display:none}
+.whatsapp{
+background:#25D366;
+margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
-<h1>🌍 GlobalEstate</h1>
-<p>Buy • Sell • Rent Worldwide</p>
+<div class="header">
+<div class="logo">🌍 GlobalEstate PRO</div>
+<p>India's Premium Property Network</p>
+</div>
 
-<h2>Add Property</h2>
+<!-- LOGIN -->
+<div class="container" id="authBox">
+<h2>Login / Signup</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-<input id="country" placeholder="Country"><br>
-<input id="state" placeholder="State"><br>
-<input id="city" placeholder="City"><br>
-<input id="price" placeholder="Price"><br>
-<input id="contact" placeholder="WhatsApp Number"><br>
+<select id="role">
+<option value="buyer">Buyer</option>
+<option value="agent">Agent</option>
+</select>
 
-<button onclick="addProperty()">🚀 Post Property</button>
+<button onclick="signup()">Signup</button>
+<button onclick="login()">Login</button>
+</div>
 
-<h2>Premium Properties</h2>
+<!-- POST PROPERTY -->
+<div class="container hidden" id="postBox">
+<h2>Post Property (Agents only)</h2>
+
+<input id="country" placeholder="Country">
+<input id="state" placeholder="State">
+<input id="city" placeholder="City">
+<input id="price" placeholder="Price">
+<input id="contact" placeholder="WhatsApp">
+
+<button onclick="postProperty()">Post Property</button>
+<button onclick="logout()">Logout</button>
+</div>
+
+<h2>Live Properties</h2>
 <div id="list"></div>
 
 <script>
-/* CONNECT SUPABASE */
-const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
+const supabaseUrl="https://okfejpqxwhykjixczwht.supabase.co";
+const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const client=supabase.createClient(supabaseUrl,supabaseKey);
+let currentUser=null;
+let currentRole=null;
 
-/* ADD PROPERTY */
-async function addProperty(){
+// SIGNUP
+async function signup(){
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
+const role=document.getElementById("role").value;
 
-const country = document.getElementById("country").value;
-const state = document.getElementById("state").value;
-const city = document.getElementById("city").value;
-const price = document.getElementById("price").value;
-const contact = document.getElementById("contact").value;
+const {data,error}=await client.auth.signUp({email,password});
+if(error){alert(error.message);return;}
 
-if(!country || !state || !city || !price || !contact){
-alert("Fill all fields");
-return;
+await client.from("users").insert([{id:data.user.id,email,role}]);
+alert("Signup success. Now login.");
 }
 
-const { error } = await supabase
-.from("Properties")
-.insert([{ country, state, city, price, contact }]);
+// LOGIN
+async function login(){
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
-if(error){
-console.log(error);
-alert("Error posting property");
-return;
-}
+const {data,error}=await client.auth.signInWithPassword({email,password});
+if(error){alert(error.message);return;}
 
-alert("Property posted successfully 🔥");
-location.reload();
-}
+currentUser=data.user;
 
-/* LOAD PROPERTIES */
-async function loadProperties(){
-
-const { data, error } = await supabase
-.from("Properties")
+// get role
+const {data:userData}=await client
+.from("users")
 .select("*")
-.order("id",{ascending:false});
+.eq("id",currentUser.id)
+.single();
 
-if(error){
-console.log(error);
-return;
-}
+currentRole=userData.role;
 
-let html = "";
+document.getElementById("authBox").classList.add("hidden");
 
-data.forEach(p=>{
-html += `
-<div class="card">
-<h3>${p.city}, ${p.state}, ${p.country}</h3>
-<p>Price: ${p.price}</p>
-<p>Contact: ${p.contact}</p>
-<a href="https://wa.me/${p.contact}" target="_blank">
-<button>WhatsApp Owner</button>
-</a>
-</div>
-`;
-});
-
-document.getElementById("list").innerHTML = html;
+if(currentRole==="agent"){
+document.getElementById("postBox").classList.remove("hidden");
+alert("Logged in as agent");
+}else{
+alert("Logged in as buyer. You can contact sellers.");
 }
 
 loadProperties();
-</script>
+}
 
+// LOGOUT
+async function logout(){
+await client.auth.signOut();
+location.reload();
+}
+
+// POST PROPERTY (AGENT ONLY)
+async function postProperty(){
+if(currentRole!=="agent"){
+alert("Only agents can post");
+return;
+}
+
+const country=country.value;
+const state=state.value;
+const city=city.value;
+const price=price.value;
+const contact=contact.value;
+
+const {error}=await client
+.from("Properties")
+.insert([{country,state,city,price,contact,user_id:currentUser.id}]);
+
+if(error){alert("Error");console.log(error);return;}
+
+alert("Property posted 💰");
+loadProperties();
+}
+
+// LOAD
+async function loadProperties(){
+const {data}=await client.from("Properties").select("*").order("id",{ascending:false});
+
+let html="";
+data.forEach(p=>{
+html+=`
+<div class="card">
+<h3>${p.city}, ${p.state}, ${p.country}</h3>
+<p>💰 ₹ ${p.price}</p>
+<a href="https://wa.me/${p.contact}" target="_blank">
+<button class="whatsapp">Chat on WhatsApp</button>
+</a>
+</div>`;
+});
+document.getElementById("list").innerHTML=html;
+}
+loadProperties();
+</script>
 </body>
 </html>
