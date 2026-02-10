@@ -102,27 +102,32 @@ if(error){
 
 // LOAD PROPERTIES
 async function loadProperties(){
+
   const { data, error } = await supabase
   .from("Properties")
-  .select("*")
-  .order("id",{ascending:false});
+  .select("*");
 
-  if(data){
-    let html="";
-    data.forEach(p=>{
-      html+=`
-      <div class="card">
-      <h3>${p.city}, ${p.state}</h3>
-      <p>${p.country}</p>
-      <h2>₹ ${p.price}</h2>
-      <a href="https://wa.me/${p.contact}" target="_blank">
-      📲 WhatsApp Seller
-      </a>
-      </div>
-      `;
-    });
-    document.getElementById("list").innerHTML=html;
+  if(error){
+    console.log(error);
+    alert("Error loading properties");
+    return;
   }
+
+  let html = "";
+
+  data.forEach(p=>{
+    html += `
+    <div class="card">
+      <h3>${p.city}, ${p.state}, ${p.country}</h3>
+      <p>Price: ${p.price}</p>
+      <p>Contact: ${p.contact}</p>
+      <a href="https://wa.me/${p.contact}" target="_blank">
+      <button>WhatsApp Owner</button></a>
+    </div>
+    `;
+  });
+
+  document.getElementById("list").innerHTML = html;
 }
 
 loadProperties();
