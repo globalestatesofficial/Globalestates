@@ -8,11 +8,17 @@ font-family:Arial;
 background:black;
 color:white;
 text-align:center;
-padding:50px;
 }
-h1{
-font-size:40px;
-color:#00ffcc;
+h1{color:#00ffcc;}
+.container{
+margin-top:40px;
+}
+input,select{
+padding:12px;
+margin:8px;
+width:250px;
+border-radius:8px;
+border:none;
 }
 button{
 padding:15px 25px;
@@ -22,19 +28,56 @@ background:#00ffcc;
 border:none;
 border-radius:10px;
 }
+.card{
+background:#111;
+margin:20px;
+padding:15px;
+border-radius:12px;
+}
 </style>
 </head>
 
 <body>
 
 <h1>🌍 GlobalEstate</h1>
-<p>Buy • Sell • Rent Properties Worldwide</p>
+<p>Post • Buy • Rent Properties Worldwide</p>
 
-<button>List Property</button>
-<button>Buy Property</button>
-<button>Rent Property</button>
+<div class="container">
 
-<p style="margin-top:50px;">Global real estate platform for the world</p>
+<h2>List Your Property</h2>
+
+<input type="text" id="country" placeholder="Country"><br>
+<input type="text" id="state" placeholder="State"><br>
+<input type="text" id="city" placeholder="City"><br>
+<input type="text" id="price" placeholder="Price"><br>
+<input type="text" id="contact" placeholder="Contact Number"><br>
+
+<button onclick="addProperty()">POST PROPERTY</button>
+
+</div>
+
+<h2>🌍 Live Properties</h2>
+<div id="list"></div>
+
+<script>
+function addProperty(){
+let country=document.getElementById("country").value;
+let state=document.getElementById("state").value;
+let city=document.getElementById("city").value;
+let price=document.getElementById("price").value;
+let contact=document.getElementById("contact").value;
+
+let card = `
+<div class="card">
+<h3>${city}, ${state}, ${country}</h3>
+<p>Price: ${price}</p>
+<p>Contact: ${contact}</p>
+</div>
+`;
+
+document.getElementById("list").innerHTML += card;
+}
+</script>
 
 </body>
 </html>
