@@ -1,240 +1,167 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GlobalEstate PRO</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>GlobalEstate</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-body{
-margin:0;
-font-family:Arial;
-background:#000;
-color:white;
-text-align:center;
-}
-.header{
-background:#0a0a0a;
-padding:20px;
-border-bottom:1px solid gold;
-}
-.logo{
-font-size:28px;
-color:gold;
-font-weight:bold;
-}
-.container{
-padding:20px;
-max-width:500px;
-margin:auto;
-}
-input,select{
-width:90%;
-padding:14px;
-margin:8px;
-border-radius:10px;
-border:none;
-background:#111;
-color:white;
-}
-button{
-padding:14px;
-border:none;
-border-radius:10px;
-background:gold;
-font-weight:bold;
-margin:8px;
-width:92%;
-}
-.google{
-background:white;
-color:black;
-}
-.card{
-background:#111;
-margin:15px;
-padding:20px;
-border-radius:14px;
-box-shadow:0 0 15px rgba(255,215,0,0.3);
-}
-.hidden{display:none}
-.whatsapp{
-background:#25D366;
-margin-top:10px;
-}
-</style>
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial;
+      background:#0b0b0b;
+      color:white;
+      text-align:center;
+    }
+
+    .top{
+      background:black;
+      padding:20px;
+      font-size:28px;
+      color:gold;
+      font-weight:bold;
+      box-shadow:0 0 10px gold;
+    }
+
+    .box{
+      margin-top:80px;
+    }
+
+    button{
+      padding:15px 25px;
+      margin:15px;
+      font-size:18px;
+      border:none;
+      border-radius:12px;
+      background:gold;
+      font-weight:bold;
+    }
+
+    input{
+      padding:12px;
+      margin:8px;
+      width:85%;
+      border-radius:10px;
+      border:none;
+    }
+
+    .card{
+      background:#111;
+      margin:15px;
+      padding:15px;
+      border-radius:14px;
+      box-shadow:0 0 10px gold;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="header">
-<div class="logo">🌍 GlobalEstate PRO</div>
-<p>India's Premium Property Network</p>
+<div class="top">🌍 GlobalEstate</div>
+
+<!-- LOGIN BOX -->
+<div class="box" id="authBox">
+  <h2>Login / Signup</h2>
+  <button onclick="googleLogin()">Continue with Google</button>
 </div>
 
-<!-- LOGIN SIGNUP -->
-<div class="container" id="authBox">
-<h2>Login / Signup</h2>
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none;">
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+  <h2>Post Property</h2>
 
-<select id="role">
-<option value="buyer">Buyer</option>
-<option value="agent">Agent</option>
-</select>
+  <input id="country" placeholder="Country"><br>
+  <input id="state" placeholder="State"><br>
+  <input id="city" placeholder="City"><br>
+  <input id="price" placeholder="Price"><br>
+  <input id="contact" placeholder="WhatsApp Number"><br>
 
-<button onclick="signup()">Signup</button>
-<button onclick="login()">Login</button>
+  <button onclick="addProperty()">POST PROPERTY</button>
 
-<button class="google" onclick="googleLogin()">Continue with Google</button>
-</div>
+  <h2>Live Properties</h2>
+  <div id="list"></div>
 
-<!-- POST PROPERTY -->
-<div class="container hidden" id="postBox">
-<h2>Post Property (Agents only)</h2>
-
-<input id="country" placeholder="Country">
-<input id="state" placeholder="State">
-<input id="city" placeholder="City">
-<input id="price" placeholder="Price">
-<input id="contact" placeholder="WhatsApp">
-
-<button onclick="postProperty()">Post Property</button>
-<button onclick="logout()">Logout</button>
-</div>
-
-<!-- PROPERTIES -->
-<div id="propertySection" class="hidden">
-<h2>Live Properties</h2>
-<div id="list"></div>
 </div>
 
 <script>
-const supabaseUrl="https://okfejpqxwhykjixczwht.supabase.co";
-const supabaseKey="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
-
-const client=supabase.createClient(supabaseUrl,supabaseKey);
-
-let currentUser=null;
-let currentRole=null;
-
-// SIGNUP
-async function signup(){
-const email=emailInput();
-const password=passwordInput();
-const role=document.getElementById("role").value;
-
-const {data,error}=await client.auth.signUp({email,password});
-if(error){alert(error.message);return;}
-
-await client.from("users").insert([{id:data.user.id,email,role}]);
-alert("Signup success. Login now");
-}
-
-// LOGIN
-async function login(){
-const email=emailInput();
-const password=passwordInput();
-
-const {data,error}=await client.auth.signInWithPassword({email,password});
-if(error){alert(error.message);return;}
-
-afterLogin(data.user);
-}
+const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // GOOGLE LOGIN
 async function googleLogin(){
-await client.auth.signInWithOAuth({
-provider:"google",
-options:{redirectTo:window.location.href}
-});
+  await supabase.auth.signInWithOAuth({
+    provider: 'google'
+  });
 }
 
-// CHECK SESSION AFTER GOOGLE REDIRECT
-client.auth.getSession().then(async(res)=>{
-if(res.data.session){
-afterLogin(res.data.session.user,true);
+// CHECK USER AFTER LOGIN
+async function checkUser(){
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if(user){
+    document.getElementById("authBox").style.display="none";
+    document.getElementById("dashboard").style.display="block";
+    loadProperties();
+  }
 }
-});
+checkUser();
 
-// AFTER LOGIN
-async function afterLogin(user,isGoogle=false){
-currentUser=user;
+// ADD PROPERTY
+async function addProperty(){
 
-const {data:userData}=await client
-.from("users")
-.select("*")
-.eq("id",user.id)
-.single();
+  const country = document.getElementById("country").value;
+  const state = document.getElementById("state").value;
+  const city = document.getElementById("city").value;
+  const price = document.getElementById("price").value;
+  const contact = document.getElementById("contact").value;
 
-if(!userData && isGoogle){
-await client.from("users").insert([{id:user.id,email:user.email,role:"buyer"}]);
-currentRole="buyer";
-}else{
-currentRole=userData.role;
-}
+  if(!country || !city || !price || !contact){
+    alert("Fill all fields");
+    return;
+  }
 
-document.getElementById("authBox").classList.add("hidden");
-document.getElementById("propertySection").classList.remove("hidden");
+  const { error } = await supabase
+  .from("Properties")
+  .insert([{country, state, city, price, contact}]);
 
-if(currentRole==="agent"){
-document.getElementById("postBox").classList.remove("hidden");
-}
-
-loadProperties();
-}
-
-// LOGOUT
-async function logout(){
-await client.auth.signOut();
-location.reload();
-}
-
-// POST PROPERTY
-async function postProperty(){
-if(currentRole!=="agent"){
-alert("Only agents can post");
-return;
-}
-
-const {error}=await client.from("Properties").insert([{
-country:val("country"),
-state:val("state"),
-city:val("city"),
-price:val("price"),
-contact:val("contact"),
-user_id:currentUser.id
-}]);
-
-if(error){alert("Error posting");console.log(error);return;}
-
-alert("Property posted 🚀");
-loadProperties();
+  if(error){
+    alert("Error posting property");
+    console.log(error);
+  }else{
+    alert("Property Posted Successfully 🚀");
+    loadProperties();
+  }
 }
 
 // LOAD PROPERTIES
 async function loadProperties(){
-const {data}=await client.from("Properties").select("*").order("id",{ascending:false});
 
-let html="";
-data.forEach(p=>{
-html+=`
-<div class="card">
-<h3>${p.city}, ${p.state}, ${p.country}</h3>
-<p>💰 ₹ ${p.price}</p>
-<a href="https://wa.me/${p.contact}" target="_blank">
-<button class="whatsapp">Chat on WhatsApp</button>
-</a>
-</div>`;
-});
-document.getElementById("list").innerHTML=html;
+  const { data, error } = await supabase
+  .from("Properties")
+  .select("*")
+  .order("id",{ascending:false});
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  let html="";
+  data.forEach(p=>{
+    html+=`
+    <div class="card">
+      <h3>${p.city}, ${p.state}, ${p.country}</h3>
+      <p>₹ ${p.price}</p>
+      <a href="https://wa.me/${p.contact}" target="_blank">
+      <button>WhatsApp Owner</button></a>
+    </div>`;
+  });
+
+  document.getElementById("list").innerHTML=html;
 }
-
-// helpers
-function val(id){return document.getElementById(id).value;}
-function emailInput(){return document.getElementById("email").value;}
-function passwordInput(){return document.getElementById("password").value;}
 </script>
 
 </body>
