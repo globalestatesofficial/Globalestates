@@ -1,44 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GlobalEstate</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlobalEstate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  
-  <!-- SUPABASE CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SUPABASE CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    body{
-      font-family:Arial;
-      background:black;
-      color:white;
-      text-align:center;
-    }
-    h1{color:gold;}
-    input{
-      padding:12px;
-      margin:6px;
-      width:80%;
-      border-radius:8px;
-      border:none;
-    }
-    button{
-      padding:12px 20px;
-      background:gold;
-      border:none;
-      border-radius:10px;
-      font-weight:bold;
-      margin:10px;
-    }
-    .card{
-      background:#111;
-      margin:15px;
-      padding:15px;
-      border-radius:12px;
-      box-shadow:0 0 10px gold;
-    }
-  </style>
+<style>
+body{
+font-family:Arial;
+background:black;
+color:white;
+text-align:center;
+}
+h1{color:gold;}
+input{
+padding:12px;
+margin:6px;
+width:80%;
+border-radius:8px;
+border:none;
+}
+button{
+padding:12px 20px;
+background:gold;
+border:none;
+border-radius:10px;
+font-weight:bold;
+margin:10px;
+}
+.card{
+background:#111;
+margin:15px;
+padding:15px;
+border-radius:12px;
+box-shadow:0 0 10px gold;
+}
+</style>
 </head>
 
 <body>
@@ -56,74 +55,72 @@
 
 <button onclick="addProperty()">Post Property</button>
 
-  
 <h2>All Properties</h2>
 <div id="list"></div>
 
 <script>
+// 🔴 YOUR REAL SUPABASE
 const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-  
 // ADD PROPERTY
 async function addProperty(){
 
-  const country = document.getElementById("country").value;
-  const state = document.getElementById("state").value;
-  const city = document.getElementById("city").value;
-  const price = document.getElementById("price").value;
-  const contact = document.getElementById("contact").value;
+const country = document.getElementById("country").value;
+const state = document.getElementById("state").value;
+const city = document.getElementById("city").value;
+const price = document.getElementById("price").value;
+const contact = document.getElementById("contact").value;
 
-  if(!country || !city){
-    alert("Fill all fields");
-    return;
-  }
+if(!country || !city){
+alert("Fill all fields");
+return;
+}
 
-  
-  const { error } = await supabase
-    .from("Properties")   // capital P same as supabase table
-    .insert([{ country, state, city, price, contact }]);
+const { error } = await client
+.from("Properties")
+.insert([{ country, state, city, price, contact }]);
 
-  if(error){
-    alert("Error posting property");
-    console.log(error);
-  }else{
-    alert("Property posted successfully 🚀");
-    location.reload();
-  }
+if(error){
+alert("Error posting");
+console.log(error);
+}else{
+alert("Posted successfully 🚀");
+loadProperties();
+}
 }
 
 // LOAD PROPERTIES
 async function loadProperties(){
 
-  const { data, error } = await supabase
-  .from("Properties")
-  .select("*")
-  .order("id",{ascending:false});
+const { data, error } = await client
+.from("Properties")
+.select("*")
+.order("id",{ascending:false});
 
-  if(error){
-    console.log(error);
-    alert("Error loading");
-    return;
-  }
+if(error){
+console.log(error);
+alert("Load error");
+return;
+}
 
-  let html="";
+let html="";
 
-  data.forEach(p=>{
-    html+=`
-    <div class="card">
-      <h3>${p.city}, ${p.state}, ${p.country}</h3>
-      <p>Price: ${p.price}</p>
-      <p>Contact: ${p.contact}</p>
-      <a href="https://wa.me/${p.contact}" target="_blank">
-      <button>WhatsApp Owner</button></a>
-    </div>
-    `;
-  });
+data.forEach(p=>{
+html += `
+<div class="card">
+<h3>${p.city}, ${p.state}, ${p.country}</h3>
+<p>Price: ${p.price}</p>
+<p>Contact: ${p.contact}</p>
+<a href="https://wa.me/${p.contact}" target="_blank">
+<button>WhatsApp Owner</button></a>
+</div>
+`;
+});
 
-  document.getElementById("list").innerHTML=html;
+document.getElementById("list").innerHTML = html;
 }
 
 loadProperties();
