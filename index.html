@@ -71,28 +71,33 @@ const supabaseKey = "sb_publishable_veIDD7EudrA_OWGF-Jz83g_oXwJpvJA";
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // ADD PROPERTY
-async function addProperty(){
-  let country = document.getElementById("country").value;
-  let state = document.getElementById("state").value;
-  let city = document.getElementById("city").value;
-  let price = document.getElementById("price").value;
-  let contact = document.getElementById("contact").value;
+async function addProperty() {
 
-  if(!country || !city || !price){
-    alert("Fill all fields");
-    return;
-  }
+const country = document.getElementById("country").value;
+const state = document.getElementById("state").value;
+const city = document.getElementById("city").value;
+const price = document.getElementById("price").value;
+const contact = document.getElementById("contact").value;
 
-  const { error } = await supabase
-  .from("Properties")
-  .insert([{country,state,city,price,contact}]);
+if(!country || !state || !city || !price || !contact){
+  alert("Fill all fields");
+  return;
+}
 
-  if(error){
-    alert("Error: "+error.message);
-  }else{
-    alert("Property Added 🚀");
-    loadProperties();
-  }
+const { data, error } = await supabase
+  .from("Properties")   // IMPORTANT: small letters
+  .insert([
+    { country: country, state: state, city: city, price: price, contact: contact }
+  ]);
+
+if(error){
+  alert("Error posting property");
+  console.log(error);
+}else{
+  alert("Property posted successfully 🚀");
+  location.reload();
+}
+
 }
 
 // LOAD PROPERTIES
