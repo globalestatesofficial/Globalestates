@@ -4,123 +4,195 @@
 <title>GlobalEstate</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- SUPABASE CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <style>
 body{
-font-family:Arial;
-background:black;
-color:white;
-text-align:center;
+  margin:0;
+  font-family: 'Segoe UI', Arial;
+  background:#000;
+  color:white;
 }
-h1{color:gold;}
+
+/* HEADER */
+.header{
+  padding:20px;
+  text-align:center;
+  background:linear-gradient(45deg,#000,#111);
+  border-bottom:1px solid gold;
+}
+.logo{
+  font-size:28px;
+  font-weight:bold;
+  color:gold;
+}
+.tag{
+  color:#ccc;
+  font-size:14px;
+}
+
+/* FORM */
+.container{
+  padding:20px;
+  max-width:500px;
+  margin:auto;
+}
 input{
-padding:12px;
-margin:6px;
-width:80%;
-border-radius:8px;
-border:none;
+  width:100%;
+  padding:14px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
+  background:#111;
+  color:white;
+  font-size:16px;
+  border:1px solid #333;
 }
+input:focus{
+  outline:none;
+  border:1px solid gold;
+}
+
 button{
-padding:12px 20px;
-background:gold;
-border:none;
-border-radius:10px;
-font-weight:bold;
-margin:10px;
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  background:gold;
+  font-weight:bold;
+  font-size:16px;
+  cursor:pointer;
 }
+
+/* PROPERTY CARDS */
+.section-title{
+  text-align:center;
+  margin-top:40px;
+  font-size:22px;
+  color:gold;
+}
+
 .card{
-background:#111;
-margin:15px;
-padding:15px;
-border-radius:12px;
-box-shadow:0 0 10px gold;
+  background:linear-gradient(145deg,#0a0a0a,#111);
+  margin:20px;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 0 20px rgba(255,215,0,0.2);
+  border:1px solid #222;
+}
+
+.location{
+  font-size:20px;
+  font-weight:bold;
+  color:gold;
+}
+
+.price{
+  font-size:18px;
+  margin-top:10px;
+}
+
+.contact{
+  color:#aaa;
+  margin:8px 0;
+}
+
+.whatsapp{
+  background:#25D366;
+  color:white;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  width:100%;
+  font-weight:bold;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🌍 GlobalEstate</h1>
-<p>Buy • Sell • Rent Worldwide</p>
+<div class="header">
+<div class="logo">🌍 GlobalEstate</div>
+<div class="tag">Buy • Sell • Rent Worldwide</div>
+</div>
 
+<div class="container">
 <h2>Add Property</h2>
 
-<input id="country" placeholder="Country"><br>
-<input id="state" placeholder="State"><br>
-<input id="city" placeholder="City"><br>
-<input id="price" placeholder="Price"><br>
-<input id="contact" placeholder="WhatsApp Number"><br>
+<input id="country" placeholder="Country">
+<input id="state" placeholder="State">
+<input id="city" placeholder="City">
+<input id="price" placeholder="Price">
+<input id="contact" placeholder="WhatsApp Number">
 
-<button onclick="addProperty()">Post Property</button>
+<button onclick="addProperty()">🚀 Post Property</button>
+</div>
 
-<h2>All Properties</h2>
+<h2 class="section-title">Premium Properties</h2>
 <div id="list"></div>
 
 <script>
-// 🔴 YOUR REAL SUPABASE
 const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
-
-const client = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseKey = "YOUR_ANON_KEY_HERE";   // paste your anon key
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // ADD PROPERTY
 async function addProperty(){
+const country=document.getElementById("country").value;
+const state=document.getElementById("state").value;
+const city=document.getElementById("city").value;
+const price=document.getElementById("price").value;
+const contact=document.getElementById("contact").value;
 
-const country = document.getElementById("country").value;
-const state = document.getElementById("state").value;
-const city = document.getElementById("city").value;
-const price = document.getElementById("price").value;
-const contact = document.getElementById("contact").value;
-
-if(!country || !city){
+if(!country || !city || !price){
 alert("Fill all fields");
 return;
 }
 
-const { error } = await client
+const {error} = await supabase
 .from("Properties")
-.insert([{ country, state, city, price, contact }]);
+.insert([{country,state,city,price,contact}]);
 
 if(error){
 alert("Error posting");
 console.log(error);
 }else{
 alert("Posted successfully 🚀");
-loadProperties();
+location.reload();
 }
 }
 
-// LOAD PROPERTIES
+// LOAD DATA
 async function loadProperties(){
-
-const { data, error } = await client
+const {data,error} = await supabase
 .from("Properties")
 .select("*")
 .order("id",{ascending:false});
 
 if(error){
 console.log(error);
-alert("Load error");
 return;
 }
 
 let html="";
 
 data.forEach(p=>{
-html += `
+html+=`
 <div class="card">
-<h3>${p.city}, ${p.state}, ${p.country}</h3>
-<p>Price: ${p.price}</p>
-<p>Contact: ${p.contact}</p>
+<div class="location">${p.city}, ${p.state}, ${p.country}</div>
+<div class="price">💰 ₹ ${p.price}</div>
+<div class="contact">📞 ${p.contact}</div>
+
 <a href="https://wa.me/${p.contact}" target="_blank">
-<button>WhatsApp Owner</button></a>
+<button class="whatsapp">Chat on WhatsApp</button>
+</a>
 </div>
 `;
 });
 
-document.getElementById("list").innerHTML = html;
+document.getElementById("list").innerHTML=html;
 }
 
 loadProperties();
