@@ -1,56 +1,95 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GlobalEstate</title>
+<title>🌍 GlobalEstate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{
 font-family:Arial;
-background:black;
+background:#0b0b0b;
 color:white;
 text-align:center;
+margin:0;
 }
-h1{color:#00ffcc;}
+
+header{
+background:black;
+padding:20px;
+font-size:28px;
+color:#00ffc3;
+font-weight:bold;
+box-shadow:0 0 20px #00ffc3;
+}
+
 .container{
-margin-top:40px;
+margin-top:30px;
 }
+
 input{
-padding:12px;
+padding:14px;
 margin:8px;
-width:250px;
-border-radius:8px;
+width:260px;
+border-radius:10px;
 border:none;
+font-size:16px;
 }
+
 button{
-padding:15px 25px;
+padding:14px 25px;
 margin:10px;
 font-size:18px;
-background:#00ffcc;
+background:#00ffc3;
 border:none;
-border-radius:10px;
+border-radius:12px;
+cursor:pointer;
+font-weight:bold;
 }
+
 .card{
 background:#111;
 margin:20px;
-padding:15px;
-border-radius:12px;
+padding:18px;
+border-radius:16px;
+box-shadow:0 0 15px rgba(0,255,195,0.3);
+}
+
+.whatsapp{
+background:#25D366;
+padding:10px 15px;
+border-radius:10px;
+display:inline-block;
+margin-top:10px;
+color:white;
+text-decoration:none;
+font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🌍 GlobalEstate</h1>
-<p>Post • Buy • Rent Properties Worldwide</p>
+<header>🌍 GlobalEstate</header>
+<p>World's Smart Property Marketplace</p>
 
+<!-- LOGIN -->
 <div class="container">
-<h2>List Your Property</h2>
+<h2>Login / Signup</h2>
+<input type="email" id="email" placeholder="Email"><br>
+<input type="password" id="password" placeholder="Password"><br>
+<button onclick="signup()">Signup</button>
+<button onclick="login()">Login</button>
+<button onclick="logout()">Logout</button>
+</div>
 
+<!-- POST PROPERTY -->
+<div class="container">
+<h2>Post Property</h2>
 <input type="text" id="country" placeholder="Country"><br>
 <input type="text" id="state" placeholder="State"><br>
 <input type="text" id="city" placeholder="City"><br>
 <input type="text" id="price" placeholder="Price"><br>
-<input type="text" id="contact" placeholder="Contact Number"><br>
-
+<input type="text" id="contact" placeholder="WhatsApp Number with country code"><br>
 <button onclick="addProperty()">POST PROPERTY</button>
 </div>
 
@@ -60,53 +99,97 @@ border-radius:12px;
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const supabaseUrl = https://okfejpqxwhykjixczwht.supabase.co;
-const supabaseKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps;
+// 🔴 ADD YOUR SUPABASE DETAILS
+const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
+
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// POST PROPERTY
-async function addProperty() {
-  const country = document.getElementById("country").value;
-  const state = document.getElementById("state").value;
-  const city = document.getElementById("city").value;
-  const price = document.getElementById("price").value;
-  const contact = document.getElementById("contact").value;
+// SIGNUP
+async function signup(){
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
 
-  const { error } = await supabase
-    .from("Properties")
-    .insert([
-      { country: country, state: state, city: city, price: price, contact: contact }
-    ]);
+const { error } = await supabase.auth.signUp({ email, password });
 
-  if (error) {
-    alert("❌ Error posting property");
-    console.log(error);
-  } else {
-    alert("✅ Property Posted Successfully");
-    loadProperties();
-  }
+if(error) alert(error.message);
+else alert("Signup success! Now login");
 }
 
-// LOAD ALL PROPERTIES
+// LOGIN
+async function login(){
+let email=document.getElementById("email").value;
+let password=document.getElementById("password").value;
+
+const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+if(error) alert(error.message);
+else alert("Login success 🚀");
+}
+
+// LOGOUT
+async function logout(){
+await supabase.auth.signOut();
+alert("Logged out");
+}
+
+// ADD PROPERTY
+async function addProperty(){
+
+const { data: { user } } = await supabase.auth.getUser();
+if(!user){
+alert("Login first");
+return;
+}
+
+let country=document.getElementById("country").value;
+let state=document.getElementById("state").value;
+let city=document.getElementById("city").value;
+let price=document.getElementById("price").value;
+let contact=document.getElementById("contact").value;
+
+const { error } = await supabase
+.from("Properties")   // if error → change to "properties"
+.insert([
+{ country, state, city, price, contact, user_id:user.id }
+]);
+
+if(error){
+alert("Error posting");
+console.log(error);
+}else{
+alert("Property Posted 🚀");
+loadProperties();
+}
+}
+
+// LOAD PROPERTIES
 async function loadProperties(){
-  const { data, error } = await supabase
-    .from("Properties")
-    .select("*")
-    .order("id", {ascending:false});
 
-  if(data){
-    let html="";
-    data.forEach(p=>{
-      html += `
-      <div class="card">
-      <h3>${p.city}, ${p.state}, ${p.country}</h3>
-      <p>Price: ${p.price}</p>
-      <p>Contact: ${p.contact}</p>
-      </div>`;
-    });
+const { data } = await supabase
+.from("Properties")
+.select("*")
+.order("id",{ascending:false});
 
-    document.getElementById("list").innerHTML = html;
-  }
+if(data){
+let html="";
+data.forEach(p=>{
+html+=`
+<div class="card">
+<h3>${p.city}, ${p.state}, ${p.country}</h3>
+<p>💰 Price: ${p.price}</p>
+
+<a class="whatsapp" target="_blank"
+href="https://wa.me/${p.contact}?text=I'm interested in your property on GlobalEstate">
+📞 WhatsApp Seller
+</a>
+
+</div>
+`;
+});
+
+document.getElementById("list").innerHTML=html;
+}
 }
 
 loadProperties();
