@@ -9,26 +9,28 @@
   <style>
     body{
       font-family: Arial;
-      background:#0f172a;
+      background:#0b0f19;
       color:white;
       padding:20px;
+      text-align:center;
     }
     input,button{
       padding:12px;
-      margin:6px;
-      width:100%;
+      margin:8px;
+      width:90%;
       border-radius:8px;
       border:none;
+      font-size:16px;
     }
     button{
-      background:#22c55e;
-      color:white;
+      background:#00ffcc;
+      color:black;
       font-weight:bold;
     }
     .card{
       background:#111827;
       padding:15px;
-      margin:10px 0;
+      margin:10px;
       border-radius:12px;
     }
   </style>
@@ -38,98 +40,107 @@
 
 <h1>🏠 Global Estates</h1>
 
+<!-- LOGIN -->
 <div id="auth">
   <h3>Login / Signup</h3>
   <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
+  <input id="password" placeholder="Password" type="password">
   <button onclick="signup()">Signup</button>
   <button onclick="login()">Login</button>
   <button onclick="googleLogin()">Login with Google</button>
 </div>
 
-<div id="app" style="display:none">
-  <h3>Add Property</h3>
-  <input id="title" placeholder="Property title">
+<!-- ADD PROPERTY -->
+<div id="dashboard" style="display:none;">
+  <h2>Add Property</h2>
+  <input id="title" placeholder="Property Title">
   <input id="price" placeholder="Price">
-  <input id="whatsapp" placeholder="WhatsApp number">
-  <button onclick="addProperty()">Post Property</button>
+  <input id="whatsapp" placeholder="WhatsApp Number">
+  <button onclick="addProperty()">Add Property</button>
   <button onclick="logout()">Logout</button>
-
-  <h3>All Properties</h3>
-  <div id="list"></div>
 </div>
+
+<h2>All Properties</h2>
+<div id="list"></div>
 
 <script>
 const supabase = window.supabase.createClient(
-"https://okfejpqxwhykjixczwht.supabase.co",
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps"
+  "https://okfejpqxwhykjixczwht.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps"
 );
 
-checkUser();
-
+// SIGNUP
 async function signup(){
   const email=document.getElementById("email").value;
   const password=document.getElementById("password").value;
 
   const {error}=await supabase.auth.signUp({email,password});
   if(error) alert(error.message);
-  else alert("Signup success. Now login.");
+  else alert("Signup success! Now login.");
 }
 
+// LOGIN
 async function login(){
   const email=document.getElementById("email").value;
   const password=document.getElementById("password").value;
 
   const {error}=await supabase.auth.signInWithPassword({email,password});
   if(error) alert(error.message);
-  else location.reload();
+  else{
+    alert("Login success");
+    showDashboard();
+  }
 }
 
+// GOOGLE LOGIN
 async function googleLogin(){
   await supabase.auth.signInWithOAuth({
     provider:"google",
-    options:{redirectTo:window.location.origin}
+    options:{
+      redirectTo:window.location.origin
+    }
   });
 }
 
+// LOGOUT
 async function logout(){
   await supabase.auth.signOut();
   location.reload();
 }
 
-async function checkUser(){
-  const {data:{user}}=await supabase.auth.getUser();
-
-  if(user){
-    document.getElementById("auth").style.display="none";
-    document.getElementById("app").style.display="block";
-    loadProperties();
-  }
-}
-
+// ADD PROPERTY
 async function addProperty(){
-  const {data:{user}}=await supabase.auth.getUser();
+  const user = (await supabase.auth.getUser()).data.user;
+
+  if(!user){
+    alert("Login first");
+    return;
+  }
 
   const title=document.getElementById("title").value;
   const price=document.getElementById("price").value;
   const whatsapp=document.getElementById("whatsapp").value;
 
   const {error}=await supabase.from("properties").insert([
-    {title,price,whatsapp,user_id:user.id}
+    {
+      title:title,
+      price:price,
+      whatsapp:whatsapp,
+      user_id:user.id
+    }
   ]);
 
-  if(error) alert(error.message);
-  else{
-    alert("Property added");
+  if(error){
+    alert(error.message);
+  }else{
+    alert("Property Added");
     loadProperties();
   }
 }
 
+// LOAD PROPERTIES
 async function loadProperties(){
-  const {data,error}=await supabase
-  .from("properties")
-  .select("*")
-  .order("id",{ascending:false});
+  const {data,error}=await supabase.from("properties").select("*").order("id",{ascending:false});
 
   if(error){
     console.log(error);
@@ -142,12 +153,30 @@ async function loadProperties(){
   data.forEach(p=>{
     list.innerHTML+=`
     <div class="card">
-      <h4>${p.title}</h4>
+      <h3>${p.title}</h3>
       <p>Price: ${p.price}</p>
-      <p>WhatsApp: ${p.whatsapp}</p>
+      <a href="https://wa.me/${p.whatsapp}" target="_blank">
+        <button>WhatsApp</button>
+      </a>
     </div>`;
   });
 }
+
+// SHOW DASHBOARD IF LOGGED
+async function checkUser(){
+  const {data}=await supabase.auth.getSession();
+  if(data.session){
+    showDashboard();
+  }
+  loadProperties();
+}
+
+function showDashboard(){
+  document.getElementById("auth").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+}
+
+checkUser();
 </script>
 
 </body>
