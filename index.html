@@ -1,166 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GlobalEstate</title>
+  <title>Global Estates Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SUPABASE -->
+  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     body{
-      margin:0;
-      font-family:Arial;
-      background:#0b0b0b;
+      font-family: Arial;
+      background:#0f172a;
       color:white;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+    .box{
+      background:#111827;
+      padding:30px;
+      border-radius:12px;
+      width:320px;
       text-align:center;
     }
-
-    .top{
-      background:black;
-      padding:20px;
-      font-size:28px;
-      color:gold;
-      font-weight:bold;
-      box-shadow:0 0 10px gold;
-    }
-
-    .box{
-      margin-top:80px;
-    }
-
-    button{
-      padding:15px 25px;
-      margin:15px;
-      font-size:18px;
-      border:none;
-      border-radius:12px;
-      background:gold;
-      font-weight:bold;
-    }
-
     input{
+      width:100%;
       padding:12px;
-      margin:8px;
-      width:85%;
-      border-radius:10px;
+      margin:8px 0;
+      border-radius:8px;
       border:none;
     }
-
-    .card{
-      background:#111;
-      margin:15px;
-      padding:15px;
-      border-radius:14px;
-      box-shadow:0 0 10px gold;
+    button{
+      width:100%;
+      padding:12px;
+      margin-top:10px;
+      border:none;
+      border-radius:8px;
+      background:#22c55e;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
+    }
+    .google{
+      background:#ea4335;
     }
   </style>
 </head>
 
 <body>
 
-<div class="top">🌍 GlobalEstate</div>
+<div class="box">
+  <h2>Global Estates Login</h2>
 
-<!-- LOGIN BOX -->
-<div class="box" id="authBox">
-  <h2>Login / Signup</h2>
-  <button onclick="googleLogin()">Continue with Google</button>
-</div>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
 
-<!-- DASHBOARD -->
-<div id="dashboard" style="display:none;">
+  <button onclick="signup()">Sign Up</button>
+  <button onclick="login()">Login</button>
 
-  <h2>Post Property</h2>
+  <hr style="margin:20px 0">
 
-  <input id="country" placeholder="Country"><br>
-  <input id="state" placeholder="State"><br>
-  <input id="city" placeholder="City"><br>
-  <input id="price" placeholder="Price"><br>
-  <input id="contact" placeholder="WhatsApp Number"><br>
+  <button class="google" onclick="googleLogin()">Login with Google</button>
 
-  <button onclick="addProperty()">POST PROPERTY</button>
-
-  <h2>Live Properties</h2>
-  <div id="list"></div>
-
+  <p id="msg"></p>
 </div>
 
 <script>
-const supabaseUrl = "https://okfejpqxwhykjixczwht.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-// GOOGLE LOGIN
+const SUPABASE_URL = "https://okfejpqxwhykjixczwht.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
+
+/* init */
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function show(msg){
+ document.getElementById("msg").innerText = msg;
+}
+
+/* signup */
+async function signup(){
+ const email = document.getElementById("email").value;
+ const pass = document.getElementById("password").value;
+
+ const {error} = await client.auth.signUp({
+   email: email,
+   password: pass
+ });
+
+ if(error) show(error.message);
+ else show("Signup success! Check email.");
+}
+
+/* login */
+async function login(){
+ const email = document.getElementById("email").value;
+ const pass = document.getElementById("password").value;
+
+ const {error} = await client.auth.signInWithPassword({
+   email: email,
+   password: pass
+ });
+
+ if(error) show(error.message);
+ else show("Login success 🔥");
+}
+
+/* google login */
 async function googleLogin(){
-  await supabase.auth.signInWithOAuth({
-    provider: 'google'
-  });
-}
+ const {error} = await client.auth.signInWithOAuth({
+   provider: "google",
+   options:{
+     redirectTo: "https://globalestates-5afw.vercel.app"
+   }
+ });
 
-// CHECK USER AFTER LOGIN
-async function checkUser(){
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if(user){
-    document.getElementById("authBox").style.display="none";
-    document.getElementById("dashboard").style.display="block";
-    loadProperties();
-  }
-}
-checkUser();
-
-// ADD PROPERTY
-async function addProperty(){
-
-  const country = document.getElementById("country").value;
-  const state = document.getElementById("state").value;
-  const city = document.getElementById("city").value;
-  const price = document.getElementById("price").value;
-  const contact = document.getElementById("contact").value;
-
-  if(!country || !city || !price || !contact){
-    alert("Fill all fields");
-    return;
-  }
-
-  const { error } = await supabase
-  .from("Properties")
-  .insert([{country, state, city, price, contact}]);
-
-  if(error){
-    alert("Error posting property");
-    console.log(error);
-  }else{
-    alert("Property Posted Successfully 🚀");
-    loadProperties();
-  }
-}
-
-// LOAD PROPERTIES
-async function loadProperties(){
-
-  const { data, error } = await supabase
-  .from("Properties")
-  .select("*")
-  .order("id",{ascending:false});
-
-  if(error){
-    console.log(error);
-    return;
-  }
-
-  let html="";
-  data.forEach(p=>{
-    html+=`
-    <div class="card">
-      <h3>${p.city}, ${p.state}, ${p.country}</h3>
-      <p>₹ ${p.price}</p>
-      <a href="https://wa.me/${p.contact}" target="_blank">
-      <button>WhatsApp Owner</button></a>
-    </div>`;
-  });
-
-  document.getElementById("list").innerHTML=html;
+ if(error) show(error.message);
 }
 </script>
 
