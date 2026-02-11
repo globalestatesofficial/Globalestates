@@ -8,28 +8,61 @@
 
   <style>
     body{
-      font-family: Arial;
+      font-family:Arial;
+      margin:0;
+      background:#f1f5f9;
+    }
+
+    header{
       background:#0f172a;
       color:white;
-      padding:20px;
+      padding:15px;
+      font-size:20px;
+      font-weight:bold;
+      text-align:center;
     }
+
+    .container{
+      padding:15px;
+    }
+
     input,button{
-      padding:10px;
-      margin:6px 0;
       width:100%;
+      padding:12px;
+      margin:8px 0;
       border-radius:8px;
-      border:none;
+      border:1px solid #ccc;
       font-size:16px;
     }
+
     button{
-      background:#22c55e;
+      background:#2563eb;
       color:white;
+      border:none;
       font-weight:bold;
     }
+
     .card{
-      background:#1e293b;
+      background:white;
       padding:15px;
-      border-radius:10px;
+      border-radius:12px;
+      margin-top:12px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .price{
+      color:green;
+      font-weight:bold;
+      font-size:18px;
+    }
+
+    .topbtn{
+      background:#16a34a;
+      margin-bottom:10px;
+    }
+
+    .logout{
+      background:red;
       margin-top:10px;
     }
   </style>
@@ -37,18 +70,30 @@
 
 <body>
 
-<h2>🏠 Global Estates</h2>
+<header>🏠 Global Estates</header>
 
-<h3>Add Property</h3>
+<div class="container" id="authBox">
+  <h3>Login / Register</h3>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="signup()">Register</button>
+  <button onclick="login()">Login</button>
+</div>
 
-<input id="title" placeholder="Property title">
-<input id="price" placeholder="Price">
-<input id="whatsapp" placeholder="WhatsApp number">
+<div class="container" id="app" style="display:none">
 
-<button onclick="addProperty()">Post Property</button>
+  <button class="logout" onclick="logout()">Logout</button>
 
-<h3>All Properties</h3>
-<div id="list"></div>
+  <h3>Post Property</h3>
+  <input id="title" placeholder="Property title">
+  <input id="price" placeholder="Price">
+  <input id="whatsapp" placeholder="WhatsApp number">
+  <button class="topbtn" onclick="addProperty()">Post Property</button>
+
+  <h3>All Properties</h3>
+  <div id="list"></div>
+
+</div>
 
 <script>
 const supabase = window.supabase.createClient(
@@ -56,67 +101,93 @@ const supabase = window.supabase.createClient(
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps"
 );
 
+// SIGNUP
+async function signup(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error}=await supabase.auth.signUp({email,password});
+
+  if(error) alert(error.message);
+  else alert("Registered! Now login");
+}
+
+// LOGIN
+async function login(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+
+  if(error) alert(error.message);
+  else checkUser();
+}
+
+// LOGOUT
+async function logout(){
+  await supabase.auth.signOut();
+  location.reload();
+}
+
+// CHECK USER
+async function checkUser(){
+  const {data:{user}}=await supabase.auth.getUser();
+
+  if(user){
+    document.getElementById("authBox").style.display="none";
+    document.getElementById("app").style.display="block";
+    loadProperties();
+  }
+}
+checkUser();
+
 // ADD PROPERTY
 async function addProperty(){
+  const {data:{user}}=await supabase.auth.getUser();
 
-  const title = document.getElementById("title").value;
-  const price = document.getElementById("price").value;
-  const whatsapp = document.getElementById("whatsapp").value;
+  const title=document.getElementById("title").value;
+  const price=document.getElementById("price").value;
+  const whatsapp=document.getElementById("whatsapp").value;
 
-  if(!title || !price){
-    alert("Enter title & price");
-    return;
-  }
-
-  const { data, error } = await supabase
+  const {error}=await supabase
   .from("properties")
-  .insert([
-    {
-      title:title,
-      price:price,
-      whatsapp:whatsapp
-    }
-  ]);
+  .insert([{
+    title:title,
+    price:price,
+    whatsapp:whatsapp,
+    user_id:user.id
+  }]);
 
   if(error){
-    alert("Error: "+error.message);
+    alert(error.message);
     return;
   }
 
-  alert("Property Added Successfully");
+  alert("Property Posted");
   loadProperties();
 }
 
-// LOAD PROPERTIES
+// LOAD
 async function loadProperties(){
-
-  const { data, error } = await supabase
+  const {data,error}=await supabase
   .from("properties")
   .select("*")
   .order("id",{ascending:false});
 
-  if(error){
-    console.log(error);
-    return;
-  }
-
-  const list = document.getElementById("list");
+  const list=document.getElementById("list");
   list.innerHTML="";
 
   data.forEach(p=>{
-    list.innerHTML += `
-      <div class="card">
-        <h3>${p.title}</h3>
-        <p>₹ ${p.price}</p>
-        <a href="https://wa.me/${p.whatsapp}" target="_blank">
-          <button>WhatsApp</button>
-        </a>
-      </div>
-    `;
+    list.innerHTML+=`
+    <div class="card">
+      <h3>${p.title}</h3>
+      <div class="price">₹ ${p.price}</div>
+      <a href="https://wa.me/${p.whatsapp}">
+        <button style="background:#25D366;margin-top:10px">WhatsApp</button>
+      </a>
+    </div>`;
   });
 }
-
-loadProperties();
 </script>
 
 </body>
