@@ -1,121 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Global Estates Login</title>
+  <title>Global Estates</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Supabase CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <style>
     body{
       font-family: Arial;
-      background:#0f172a;
+      background:#0b1a33;
       color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
-    .box{
-      background:#111827;
-      padding:30px;
-      border-radius:12px;
-      width:320px;
       text-align:center;
+      padding-top:80px;
     }
     input{
-      width:100%;
-      padding:12px;
-      margin:8px 0;
+      width:80%;
+      padding:15px;
+      margin:10px;
       border-radius:8px;
       border:none;
     }
     button{
-      width:100%;
-      padding:12px;
-      margin-top:10px;
+      width:85%;
+      padding:15px;
+      margin:10px;
       border:none;
       border-radius:8px;
-      background:#22c55e;
-      color:white;
+      font-size:18px;
       font-weight:bold;
       cursor:pointer;
     }
-    .google{
-      background:#ea4335;
-    }
+    .green{background:#22c55e;color:white;}
+    .red{background:#ef4444;color:white;}
   </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Global Estates Login</h2>
+<h1>Global Estates Login</h1>
 
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
+<input id="email" type="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Password"><br>
 
-  <button onclick="signup()">Sign Up</button>
-  <button onclick="login()">Login</button>
+<button class="green" onclick="signup()">Sign Up</button>
+<button class="green" onclick="login()">Login</button>
 
-  <hr style="margin:20px 0">
+<hr style="width:80%">
 
-  <button class="google" onclick="googleLogin()">Login with Google</button>
+<button class="red" onclick="googleLogin()">Login with Google</button>
 
-  <p id="msg"></p>
-</div>
+<p id="msg"></p>
 
 <script>
-
-const SUPABASE_URL = "https://okfejpqxwhykjixczwht.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps";
-
-/* init */
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(
+"https://jvwcfsuyjydbjlfsrnbk.supabase.co",
+"PASTE_YOUR_ANON_KEY_HERE"
+);
 
 function show(msg){
- document.getElementById("msg").innerText = msg;
+document.getElementById("msg").innerText = msg;
 }
 
-/* signup */
+// signup
 async function signup(){
- const email = document.getElementById("email").value;
- const pass = document.getElementById("password").value;
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
- const {error} = await client.auth.signUp({
-   email: email,
-   password: pass
- });
+const {error}=await supabase.auth.signUp({email,password});
 
- if(error) show(error.message);
- else show("Signup success! Check email.");
+if(error) show(error.message);
+else show("Signup success! Check email.");
 }
 
-/* login */
+// login
 async function login(){
- const email = document.getElementById("email").value;
- const pass = document.getElementById("password").value;
+const email=document.getElementById("email").value;
+const password=document.getElementById("password").value;
 
- const {error} = await client.auth.signInWithPassword({
-   email: email,
-   password: pass
- });
+const {error}=await supabase.auth.signInWithPassword({email,password});
 
- if(error) show(error.message);
- else show("Login success 🔥");
+if(error) show(error.message);
+else show("Login successful");
 }
 
-/* google login */
+// google login
 async function googleLogin(){
- const {error} = await client.auth.signInWithOAuth({
-   provider: "google",
-   options:{
-     redirectTo: "https://globalestates-5afw.vercel.app"
-   }
- });
+const {error}=await supabase.auth.signInWithOAuth({
+provider:"google",
+options:{
+redirectTo:"https://states.vercel.app"
+}
+});
 
- if(error) show(error.message);
+if(error) show(error.message);
 }
 </script>
 
