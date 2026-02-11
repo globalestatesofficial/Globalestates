@@ -1,194 +1,152 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Global Estates</title>
+  <title>Global Estates</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<style>
-body{
-font-family:Poppins;
-margin:0;
-background:#0f172a;
-color:white;
-}
-header{
-background:#020617;
-padding:15px;
-font-size:22px;
-font-weight:700;
-text-align:center;
-color:#38bdf8;
-}
-.container{padding:20px;max-width:900px;margin:auto;}
-input,button,select{
-width:100%;
-padding:12px;
-margin:8px 0;
-border-radius:8px;
-border:none;
-font-size:16px;
-}
-button{
-background:#38bdf8;
-color:black;
-font-weight:600;
-cursor:pointer;
-}
-.card{
-background:#020617;
-padding:15px;
-border-radius:12px;
-margin-top:15px;
-box-shadow:0 0 10px rgba(0,0,0,0.5);
-}
-.whatsapp{
-background:#22c55e;
-color:white;
-margin-top:10px;
-}
-.google{
-background:white;
-color:black;
-}
-.hidden{display:none;}
-</style>
+  <style>
+    body{
+      font-family: Arial;
+      background:#0f172a;
+      color:white;
+      padding:20px;
+    }
+    input,button{
+      padding:12px;
+      margin:6px;
+      width:100%;
+      border-radius:8px;
+      border:none;
+    }
+    button{
+      background:#22c55e;
+      color:white;
+      font-weight:bold;
+    }
+    .card{
+      background:#111827;
+      padding:15px;
+      margin:10px 0;
+      border-radius:12px;
+    }
+  </style>
 </head>
 
 <body>
 
-<header>🏠 Global Estates</header>
+<h1>🏠 Global Estates</h1>
 
-<div class="container">
-
-<!-- LOGIN -->
-<div id="authBox">
-<h2>Login / Signup</h2>
-<input type="email" id="email" placeholder="Email">
-<input type="password" id="password" placeholder="Password">
-
-<button onclick="signup()">Signup</button>
-<button onclick="login()">Login</button>
-<button class="google" onclick="googleLogin()">Login with Google</button>
+<div id="auth">
+  <h3>Login / Signup</h3>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="signup()">Signup</button>
+  <button onclick="login()">Login</button>
+  <button onclick="googleLogin()">Login with Google</button>
 </div>
 
-<!-- POST PROPERTY -->
-<div id="postBox" class="hidden">
-<h2>Post Property (Agents)</h2>
+<div id="app" style="display:none">
+  <h3>Add Property</h3>
+  <input id="title" placeholder="Property title">
+  <input id="price" placeholder="Price">
+  <input id="whatsapp" placeholder="WhatsApp number">
+  <button onclick="addProperty()">Post Property</button>
+  <button onclick="logout()">Logout</button>
 
-<input id="title" placeholder="Property title">
-<input id="price" placeholder="Price">
-<input id="location" placeholder="Location">
-<input id="whatsapp" placeholder="WhatsApp number with country code">
-
-<button onclick="postProperty()">Post Property</button>
-<button onclick="logout()">Logout</button>
-</div>
-
-<!-- LISTINGS -->
-<h2 style="margin-top:30px">Latest Properties</h2>
-<div id="listings"></div>
-
+  <h3>All Properties</h3>
+  <div id="list"></div>
 </div>
 
 <script>
-// SUPABASE CONFIG (your keys added)
 const supabase = window.supabase.createClient(
 "https://okfejpqxwhykjixczwht.supabase.co",
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps"
 );
 
-// SIGNUP
+checkUser();
+
 async function signup(){
-let email=document.getElementById("email").value;
-let password=document.getElementById("password").value;
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
 
-const {error}=await supabase.auth.signUp({email,password});
-if(error) alert(error.message);
-else alert("Signup success. Now login.");
+  const {error}=await supabase.auth.signUp({email,password});
+  if(error) alert(error.message);
+  else alert("Signup success. Now login.");
 }
 
-// LOGIN
 async function login(){
-let email=document.getElementById("email").value;
-let password=document.getElementById("password").value;
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
 
-const {error}=await supabase.auth.signInWithPassword({email,password});
-if(error) alert(error.message);
-else{
-alert("Login success");
-checkUser();
-}
+  const {error}=await supabase.auth.signInWithPassword({email,password});
+  if(error) alert(error.message);
+  else location.reload();
 }
 
-// GOOGLE LOGIN
 async function googleLogin(){
-await supabase.auth.signInWithOAuth({
-provider:'google',
-options:{redirectTo:window.location.origin}
-});
+  await supabase.auth.signInWithOAuth({
+    provider:"google",
+    options:{redirectTo:window.location.origin}
+  });
 }
 
-// LOGOUT
 async function logout(){
-await supabase.auth.signOut();
-location.reload();
+  await supabase.auth.signOut();
+  location.reload();
 }
 
-// CHECK USER
 async function checkUser(){
-const {data:{user}}=await supabase.auth.getUser();
-if(user){
-document.getElementById("authBox").classList.add("hidden");
-document.getElementById("postBox").classList.remove("hidden");
-loadProperties();
-}else{
-loadProperties();
-}
-}
-checkUser();
+  const {data:{user}}=await supabase.auth.getUser();
 
-// POST PROPERTY
-async function postProperty(){
-let title=document.getElementById("title").value;
-let price=document.getElementById("price").value;
-let location=document.getElementById("location").value;
-let whatsapp=document.getElementById("whatsapp").value;
-
-const {error}=await supabase.from("properties").insert([
-{title,price,location,whatsapp}
-]);
-
-if(error){alert(error.message);}
-else{
-alert("Property posted");
-loadProperties();
-}
+  if(user){
+    document.getElementById("auth").style.display="none";
+    document.getElementById("app").style.display="block";
+    loadProperties();
+  }
 }
 
-// LOAD
+async function addProperty(){
+  const {data:{user}}=await supabase.auth.getUser();
+
+  const title=document.getElementById("title").value;
+  const price=document.getElementById("price").value;
+  const whatsapp=document.getElementById("whatsapp").value;
+
+  const {error}=await supabase.from("properties").insert([
+    {title,price,whatsapp,user_id:user.id}
+  ]);
+
+  if(error) alert(error.message);
+  else{
+    alert("Property added");
+    loadProperties();
+  }
+}
+
 async function loadProperties(){
-const {data,error}=await supabase.from("properties").select("*").order("id",{ascending:false});
-if(data){
-let html="";
-data.forEach(p=>{
-html+=`
-<div class="card">
-<h3>${p.title}</h3>
-<p>💰 ${p.price}</p>
-<p>📍 ${p.location}</p>
-<a href="https://wa.me/${p.whatsapp}" target="_blank">
-<button class="whatsapp">WhatsApp Agent</button>
-</a>
-</div>
-`;
-});
-document.getElementById("listings").innerHTML=html;
-}
+  const {data,error}=await supabase
+  .from("properties")
+  .select("*")
+  .order("id",{ascending:false});
+
+  if(error){
+    console.log(error);
+    return;
+  }
+
+  const list=document.getElementById("list");
+  list.innerHTML="";
+
+  data.forEach(p=>{
+    list.innerHTML+=`
+    <div class="card">
+      <h4>${p.title}</h4>
+      <p>Price: ${p.price}</p>
+      <p>WhatsApp: ${p.whatsapp}</p>
+    </div>`;
+  });
 }
 </script>
 
