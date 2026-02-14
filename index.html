@@ -3,112 +3,179 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Global Estates</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f1f5f9;
+margin:0;
+font-family:Arial;
+background:#f5f7fb;
 }
 
-header{
-  background:#0f172a;
-  color:white;
-  padding:15px;
-  font-size:22px;
-  font-weight:bold;
-  text-align:center;
+/* HEADER */
+.header{
+background:white;
+padding:15px;
+font-size:22px;
+font-weight:bold;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
-.container{
-  padding:15px;
+.logo{color:#2563eb}
+.postBtnTop{
+background:#16a34a;
+color:white;
+padding:8px 14px;
+border-radius:8px;
+font-size:14px;
+border:none;
 }
 
-input,button{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:16px;
+/* SEARCH */
+.searchBox{
+margin:15px;
+background:white;
+padding:12px;
+border-radius:14px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+.searchBox input{
+width:100%;
+border:none;
+font-size:16px;
+outline:none;
 }
 
-button{
-  background:#2563eb;
-  color:white;
-  border:none;
-  font-weight:bold;
-}
-
-.search{
-  background:white;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:15px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.08);
-}
-
+/* PROPERTY CARD */
 .card{
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  margin-top:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+background:white;
+margin:15px;
+border-radius:16px;
+overflow:hidden;
+box-shadow:0 5px 14px rgba(0,0,0,0.1);
 }
-
-.price{
-  color:green;
-  font-weight:bold;
-  font-size:18px;
+.img{
+height:180px;
+background:url('https://images.unsplash.com/photo-1568605114967-8130f3a36994?q=80&w=1200') center/cover;
 }
-
+.details{padding:14px}
+.title{font-size:18px;font-weight:bold}
+.price{color:green;font-weight:bold;margin-top:6px}
 .whatsapp{
-  background:#25D366;
-  margin-top:10px;
+background:#25D366;
+color:white;
+padding:10px;
+border:none;
+width:100%;
+border-radius:8px;
+margin-top:10px;
 }
 
-.logout{
-  background:red;
-  margin-bottom:10px;
+/* FLOAT BUTTON */
+.fab{
+position:fixed;
+bottom:80px;
+right:20px;
+background:#2563eb;
+color:white;
+width:60px;
+height:60px;
+border-radius:50%;
+font-size:30px;
+border:none;
+box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* BOTTOM NAV */
+.nav{
+position:fixed;
+bottom:0;
+width:100%;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:10px 0;
+box-shadow:0 -2px 10px rgba(0,0,0,0.15);
+}
+.nav div{font-size:13px;text-align:center}
+
+/* MODAL */
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+justify-content:center;
+align-items:center;
+}
+.modalContent{
+background:white;
+padding:20px;
+border-radius:14px;
+width:90%;
+}
+input{
+width:100%;
+padding:12px;
+margin:6px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+button{
+padding:12px;
+border:none;
+border-radius:8px;
+background:#2563eb;
+color:white;
+width:100%;
+margin-top:8px;
 }
 </style>
 </head>
 
 <body>
 
-<header>🏠 Global Estates</header>
-
-<!-- LOGIN -->
-<div class="container" id="authBox">
-  <h3>Login / Register</h3>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="signup()">Register</button>
-  <button onclick="login()">Login</button>
+<!-- HEADER -->
+<div class="header">
+<div class="logo">🏠 Global Estates</div>
+<button class="postBtnTop" onclick="openPost()">Post</button>
 </div>
 
-<!-- APP -->
-<div class="container" id="app" style="display:none">
+<!-- SEARCH -->
+<div class="searchBox">
+<input id="search" placeholder="Search city, area..." onkeyup="searchProperty()">
+</div>
 
-  <button class="logout" onclick="logout()">Logout</button>
+<!-- PROPERTY LIST -->
+<div id="list"></div>
 
-  <div class="search">
-    <h3>Post Property</h3>
-    <input id="title" placeholder="Property title">
-    <input id="price" placeholder="Price">
-    <input id="whatsapp" placeholder="WhatsApp number">
-    <button onclick="addProperty()">Post Property</button>
-  </div>
+<!-- FLOAT POST -->
+<button class="fab" onclick="openPost()">+</button>
 
-  <div class="search">
-    <input id="searchBox" placeholder="Search property..." onkeyup="searchProperty()">
-  </div>
+<!-- BOTTOM NAV -->
+<div class="nav">
+<div>🏠<br>Home</div>
+<div>❤️<br>Saved</div>
+<div>📞<br>Contact</div>
+<div onclick="logout()">👤<br>Logout</div>
+</div>
 
-  <h3>Latest Properties</h3>
-  <div id="list"></div>
-
+<!-- POST MODAL -->
+<div class="modal" id="postModal">
+<div class="modalContent">
+<h3>Post Property</h3>
+<input id="title" placeholder="Property title">
+<input id="price" placeholder="Price">
+<input id="whatsapp" placeholder="WhatsApp number">
+<button onclick="addProperty()">Submit</button>
+<button onclick="closePost()">Cancel</button>
+</div>
 </div>
 
 <script>
@@ -118,125 +185,78 @@ const supabase = window.supabase.createClient(
 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmVqcHF4d2h5a2ppeGN6d2h0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3MTcxMjksImV4cCI6MjA4NjI5MzEyOX0.lz5_XWrBHnzk4VP1vtHQwYLCd5gd6oHgGxiKo0JxMps"
 );
 
-// REGISTER
-async function signup(){
-  const email=emailEl().value;
-  const password=passEl().value;
-
-  const {error}=await supabase.auth.signUp({email,password});
-  if(error) alert(error.message);
-  else alert("Registered! Now login");
-}
-
-// LOGIN
-async function login(){
-  const email=emailEl().value;
-  const password=passEl().value;
-
-  const {error}=await supabase.auth.signInWithPassword({email,password});
-  if(error) alert(error.message);
-  else checkUser();
-}
-
-// LOGOUT
-async function logout(){
-  await supabase.auth.signOut();
-  location.reload();
-}
-
-// CHECK USER
-async function checkUser(){
-  const {data:{user}}=await supabase.auth.getUser();
-  if(user){
-    authBox.style.display="none";
-    app.style.display="block";
-    loadProperties();
-  }
-}
+// CHECK LOGIN
 checkUser();
-
-// ADD PROPERTY
-async function addProperty(){
-  const {data:{user}}=await supabase.auth.getUser();
-
-  const title=val("title");
-  const price=val("price");
-  const whatsapp=val("whatsapp");
-
-  if(!title || !price || !whatsapp){
-    alert("Fill all fields");
-    return;
-  }
-
-  const {error}=await supabase.from("properties").insert([{
-    title:title,
-    price:price,
-    whatsapp:whatsapp,
-    user_id:user.id
-  }]);
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  alert("Property Posted");
-  clearInputs();
-  loadProperties();
+async function checkUser(){
+const {data:{user}}=await supabase.auth.getUser();
+if(!user){
+let email=prompt("Enter email");
+let pass=prompt("Enter password");
+await supabase.auth.signInWithPassword({email:email,password:pass});
+}
+loadProperties();
 }
 
-// LOAD PROPERTIES
-let allData=[];
-
+// LOAD
+let all=[];
 async function loadProperties(){
-  const {data,error}=await supabase
-  .from("properties")
-  .select("*")
-  .order("id",{ascending:false});
-
-  if(error){
-    alert(error.message);
-    return;
-  }
-
-  allData=data;
-  showData(data);
+const {data}=await supabase.from("properties").select("*").order("id",{ascending:false});
+all=data;
+show(data);
 }
 
-// SHOW DATA
-function showData(data){
-  const list=document.getElementById("list");
-  list.innerHTML="";
-
-  data.forEach(p=>{
-    list.innerHTML+=`
-    <div class="card">
-      <h3>${p.title}</h3>
-      <div class="price">₹ ${p.price}</div>
-      <a href="https://wa.me/${p.whatsapp}">
-        <button class="whatsapp">WhatsApp</button>
-      </a>
-    </div>`;
-  });
+// SHOW
+function show(data){
+const list=document.getElementById("list");
+list.innerHTML="";
+data.forEach(p=>{
+list.innerHTML+=`
+<div class="card">
+<div class="img"></div>
+<div class="details">
+<div class="title">${p.title}</div>
+<div class="price">₹ ${p.price}</div>
+<a href="https://wa.me/${p.whatsapp}">
+<button class="whatsapp">WhatsApp Owner</button>
+</a>
+</div>
+</div>`;
+});
 }
 
 // SEARCH
 function searchProperty(){
-  const text=document.getElementById("searchBox").value.toLowerCase();
-  const filtered=allData.filter(p=>p.title.toLowerCase().includes(text));
-  showData(filtered);
+let t=document.getElementById("search").value.toLowerCase();
+let f=all.filter(x=>x.title.toLowerCase().includes(t));
+show(f);
 }
 
-// HELPERS
-function val(id){return document.getElementById(id).value;}
-function emailEl(){return document.getElementById("email");}
-function passEl(){return document.getElementById("password");}
-function clearInputs(){
-  document.getElementById("title").value="";
-  document.getElementById("price").value="";
-  document.getElementById("whatsapp").value="";
+// POST
+function openPost(){postModal.style.display="flex";}
+function closePost(){postModal.style.display="none";}
+
+async function addProperty(){
+const {data:{user}}=await supabase.auth.getUser();
+
+let title=document.getElementById("title").value;
+let price=document.getElementById("price").value;
+let whatsapp=document.getElementById("whatsapp").value;
+
+const {error}=await supabase.from("properties").insert([{
+title,price,whatsapp,user_id:user.id
+}]);
+
+if(error){alert(error.message);return;}
+alert("Posted 🚀");
+closePost();
+loadProperties();
+}
+
+// LOGOUT
+async function logout(){
+await supabase.auth.signOut();
+location.reload();
 }
 </script>
-
 </body>
 </html>
